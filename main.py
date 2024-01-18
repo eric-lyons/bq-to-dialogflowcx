@@ -7,9 +7,9 @@ import json
 import jsonify
 import os
 
-#import enviromental variables for project and location
-project=os.environ.get('project')
-location=os.environ.get('location')
+# import enviromental variables for project and location
+project = os.environ.get('project')
+location = os.environ.get('location')
 
 from vertexai.language_models import CodeGenerationModel
 from vertexai.preview.generative_models import GenerativeModel, Part
