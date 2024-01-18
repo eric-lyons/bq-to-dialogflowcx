@@ -108,7 +108,7 @@ def bq_client(query):
     json_data = [list(row) for row in results]
     return json_data
 
-# takes output from bq_client and summariezes it in 3 to 4 sentences.
+# takes output from bq_client and summarizes it in 3 to 4 sentences.
 
 
 def summarize_with_llm(data):
