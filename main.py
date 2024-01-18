@@ -1,4 +1,3 @@
-
 import functions_framework
 import pandas as pd
 from google.cloud import bigquery
@@ -7,9 +6,12 @@ import json
 import jsonify
 import os
 
-# import enviromental variables for project and location
+
 project = os.environ.get('project')
 location = os.environ.get('location')
+dataset = os.environ.get('dataset')
+table = os.environ.get('table')
+schema = os.environ.get('schema')
 
 from vertexai.language_models import CodeGenerationModel
 from vertexai.preview.generative_models import GenerativeModel, Part
@@ -49,33 +51,12 @@ def create_sql(question):
 
     # inject user input (question) into prompt:
     # outlines the schema of the database, this is not specific structure
-    schema = '''{
-                       order_id: STRING,
-                       order_date: STRING,
-                       ship_date: STRING,
-                       ship_mode: STRING,
-                       customer_name: STRING,
-                       segment: STRING,
-                       state: STRING,
-                       country: STRING,
-                       market: STRING,
-                       region: STRING,
-                       product_id: STRING,
-                       category: STRING,
-                       sub_category: STRING,
-                       product_name: STRING,
-                       sales: INTEGER,
-                       quantity: INTEGER,
-                       discount: FLOAT,
-                       profit: FLOAT,
-                       shipping_cost: FLOAT,
-                       order_priority: STRING,
-                       year: INTEGER
-                   }
-                '''
+    # if using a different table, please update schema accordingly
     # inject question into the prompt
     query = "query = {" + question + "}"
-    # add rules for LLM to follow
+    # add rules for LLM to follow.
+    fully_scoped_table = project + '.' + dataset + '.' + table
+    print(fully_scoped_table)
     rules = '''Rules:
                     1. Please read the question or statement
                         in the section called query.
@@ -86,11 +67,10 @@ def create_sql(question):
                         please state: I am sorry, the table does not contain
                         that information, please limit the questions to orders.
                     4. Turn the question into a BigQuery SQL statement
-                        using the table called orders in the dataset called
-                        test within the project called hsp-lyons-main-project.
-                    5. Fully scope all table references with
-                        hsp-lyons-main-projet.test.orders
-                '''
+                        using the table called {} in the dataset called
+                        {} within the project called {}.
+                    5. Fully scope all table references with {}
+            '''.format(table, dataset, project, fully_scoped_table)
 
     final_prompt = schema + query + rules
     print(final_prompt)
