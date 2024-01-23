@@ -115,13 +115,15 @@ def summarize_with_llm(data):
     model = GenerativeModel("gemini-pro")
     # data = ''.to_list(str(i) for i in data)
     data = str(data)
-    summarize_prompt = "Data = {" + data + '''} Please
-        summarize this data in a few sentences.
+    summarize_prompt = '''Data = {}
+        Please summarize this data in a few sentences.
         If there is only a single value,
-        just return the single value'''
+        just return the single value. Please do not describe
+        the shape or structure of the data.'''.format(data)
+
     responses = model.generate_content(
         summarize_prompt,
-        generation_config = {
+        generation_config={
             "max_output_tokens": 2048,
             "temperature": 0.9,
             "top_p": 1
