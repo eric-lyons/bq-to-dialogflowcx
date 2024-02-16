@@ -30,7 +30,7 @@ def handle_webhook(request):
 
     output = create_sql(question)
     answer = bq_client(output)
-    final_answer = summarize_with_llm(answer)
+    final_answer = summarize_with_llm(question, answer)
 
     res = {
         "fulfillment_response": {"messages": [
@@ -50,8 +50,6 @@ def create_sql(question):
     vertexai.init(project=project, location=location)
 
     # inject user input (question) into prompt:
-    # outlines the schema of the database, this is not specific structure
-    # if using a different table, please update schema accordingly
     # inject question into the prompt
     query = "query = {" + question + "}"
     # add rules for LLM to follow.
@@ -111,15 +109,19 @@ def bq_client(query):
 # takes output from bq_client and summarizes it in 3 to 4 sentences.
 
 
-def summarize_with_llm(data):
-    model = GenerativeModel("gemini-pro")
+def summarize_with_llm(data, question):
+    model = GenerativeModel("chat-bison")
     # data = ''.to_list(str(i) for i in data)
     data = str(data)
-    summarize_prompt = '''Data = {}
-        Please summarize this data in a few sentences.
-        If there is only a single value,
-        just return the single value. Please do not describe
-        the shape or structure of the data.'''.format(data)
+    summarize_prompt = '''
+        Please answer this question {} based on this database result data =
+        [ {} ] please summarize this data in the section labeled data in a
+        few sentences. If there is only a single record in the data section,
+        just return the value within the data section in a sentence that
+        answers the question. Please do not describe the shape or structure
+        of the data. Highlight descriptive statistics and trends if
+        possible'''.format(question, data)
+    print(summarize_prompt)
 
     responses = model.generate_content(
         summarize_prompt,
